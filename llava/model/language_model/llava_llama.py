@@ -25,6 +25,7 @@ from transformers.modeling_outputs import CausalLMOutputWithPast
 from transformers.generation.utils import GenerateOutput
 
 from ..llava_arch import LlavaMetaModel, LlavaMetaForCausalLM
+from ..losses import *
 
 
 class LlavaConfig(LlamaConfig):
@@ -47,6 +48,8 @@ class LlavaLlamaForCausalLM(LlamaForCausalLM, LlavaMetaForCausalLM):
         self.pretraining_tp = config.pretraining_tp
         self.vocab_size = config.vocab_size
         self.lm_head = nn.Linear(config.hidden_size, config.vocab_size, bias=False)
+        self.loss_dif = DiffLoss()
+        self.loss_sim = CMD()
 
         # Initialize weights and apply final processing
         self.post_init()
@@ -77,7 +80,8 @@ class LlavaLlamaForCausalLM(LlamaForCausalLM, LlavaMetaForCausalLM):
                 attention_mask,
                 past_key_values,
                 inputs_embeds,
-                labels
+                labels,
+                embeds
             ) = self.prepare_inputs_labels_for_multimodal(
                 input_ids,
                 position_ids,
@@ -88,7 +92,7 @@ class LlavaLlamaForCausalLM(LlamaForCausalLM, LlavaMetaForCausalLM):
                 image_sizes
             )
 
-        return super().forward(
+        outputs =  super().forward(
             input_ids=input_ids,
             attention_mask=attention_mask,
             position_ids=position_ids,
@@ -100,6 +104,14 @@ class LlavaLlamaForCausalLM(LlamaForCausalLM, LlavaMetaForCausalLM):
             output_hidden_states=output_hidden_states,
             return_dict=return_dict
         )
+
+        device = outputs['loss'].device
+        diff_loss = self.loss_dif(embeds['img_embeds1'], embeds['img_embeds2']) 
+        diff_loss += self.loss_diff(embeds['img_embeds1'], embeds['text_embeds'])
+        sim_loss = self.loss_sim(embeds['img_embeds2'], embeds['text_embeds'], 5)
+        outputs['loss'] += self.config.diff_loss_ceoff * diff_loss.to(device) + self.config.sim_loss_coeff*sim_loss.to(device)
+
+        return outputs
 
     @torch.no_grad()
     def generate(
@@ -121,7 +133,9 @@ class LlavaLlamaForCausalLM(LlamaForCausalLM, LlavaMetaForCausalLM):
                 attention_mask,
                 _,
                 inputs_embeds,
+                _,
                 _
+                
             ) = self.prepare_inputs_labels_for_multimodal(
                 inputs,
                 position_ids,
