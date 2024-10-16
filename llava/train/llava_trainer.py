@@ -242,21 +242,18 @@ class LLaVATrainer(Trainer):
             run_dir = self._get_output_dir(trial=trial)
             output_dir = os.path.join(run_dir, checkpoint_folder)
             generation_config.save_pretrained(output_dir)
-
-            # Only save Adapter
-            keys_to_match = ['mm_projector1', 'mm_projector2', 'vision_resampler']
-            if getattr(self.args, "use_im_start_end", False):
-                keys_to_match.extend(['embed_tokens', 'embed_in'])
-
-            weight_to_save = get_mm_adapter_state_maybe_zero_3(self.model.named_parameters(), keys_to_match)
-            print(weight_to_save.keys())
             os.makedirs(output_dir, exist_ok = True)
 
-            if self.args.local_rank == 0 or self.args.local_rank == -1:
-                self.model.save_pretrained(output_dir)
-                torch.save(weight_to_save, os.path.join(output_dir, f'mm_projector.bin'))
+            for projector in ['mm_projector1', 'mm_projector2']:
+                # Only save Adapter
+                keys_to_match = [projector, 'vision_resampler']
+                if getattr(self.args, "use_im_start_end", False):
+                    keys_to_match.extend(['embed_tokens', 'embed_in'])
+                    weight_to_save = get_mm_adapter_state_maybe_zero_3(self.model.named_parameters(), keys_to_match)
 
-                print(generation_config)
+                if self.args.local_rank == 0 or self.args.local_rank == -1:
+                    self.model.config.save_pretrained(output_dir)
+                    torch.save(weight_to_save, os.path.join(output_dir, f'{projector}.bin'))
         else:
             super(LLaVATrainer, self)._save_checkpoint(model, trial, metrics)
 
