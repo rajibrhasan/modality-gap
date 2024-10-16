@@ -33,6 +33,7 @@ class LlavaMetaModel:
 
         if hasattr(config, "mm_vision_tower"):
             self.vision_tower = build_vision_tower(config, delay_load=True)
+            self.mm_projector = nn.Module()
 
             #Added two projector for modality-specific and modality-invariant embeddings
             self.mm_projector.projector1 = build_vision_projector(config)
