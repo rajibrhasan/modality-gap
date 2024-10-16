@@ -230,21 +230,11 @@ class LLaVATrainer(Trainer):
     def _save_checkpoint(self, model, trial, metrics=None):
         if getattr(self.args, 'tune_mm_mlp_adapter', False):
             from transformers.trainer_utils import PREFIX_CHECKPOINT_DIR
-            from transformers import GenerationConfig
-
-            # Create a GenerationConfig object with your custom parameters
-            generation_config = GenerationConfig(max_length=4096)
-
-            # Save the GenerationConfig object to the output directory
-        
             checkpoint_folder = f"{PREFIX_CHECKPOINT_DIR}_{self.state.global_step}"
 
             run_dir = self._get_output_dir(trial=trial)
             output_dir = os.path.join(run_dir, checkpoint_folder)
-            generation_config.save_pretrained(output_dir)
             os.makedirs(output_dir, exist_ok = True)
-
-           
             # Only save Adapter
             keys_to_match = ['mm_projector', 'vision_resampler']
             if getattr(self.args, "use_im_start_end", False):
@@ -252,10 +242,10 @@ class LLaVATrainer(Trainer):
             weight_to_save = get_mm_adapter_state_maybe_zero_3(self.model.named_parameters(), keys_to_match)
 
             if self.args.local_rank == 0 or self.args.local_rank == -1:
-                self.model.config.save_pretrained(output_dir)
+                # self.model.config.save_pretrained(output_dir)
                 torch.save(weight_to_save, os.path.join(output_dir, f'mm_projector.bin'))
         else:
-            super(LLaVATrainer, self)._save_checkpoint(model, trial, metrics)
+            super(LLaVATrainer, self)._s#ave_checkpoint(model, trial, metrics)
 
     def _save(self, output_dir: Optional[str] = None, state_dict=None):
         if getattr(self.args, 'tune_mm_mlp_adapter', False):
