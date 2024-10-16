@@ -54,6 +54,8 @@ class LlavaLlamaForCausalLM(LlamaForCausalLM, LlavaMetaForCausalLM):
         # Initialize weights and apply final processing
         self.post_init()
 
+        print(config)
+
     def get_model(self):
         return self.model
 
