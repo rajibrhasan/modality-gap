@@ -312,6 +312,10 @@ class LlavaMetaForCausalLM(ABC):
             cur_new_img_embeds2 = torch.cat(cur_new_img_embeds2)
             cur_new_text_embeds = torch.cat(cur_new_text_embeds)
 
+            print('cur_new_img_embeds1 shape: ', cur_new_input_embeds.shape)
+            print('cur_new_img_embeds2 shape: ', cur_new_img_embeds1.shape)
+            print('cur_new_text_embeds shape: ', cur_new_text_embeds.shape)
+
 
             new_input_embeds.append(cur_new_input_embeds)
             new_labels.append(cur_new_labels)
@@ -319,6 +323,8 @@ class LlavaMetaForCausalLM(ABC):
             img_embeds1.append(cur_new_img_embeds1.mean(dim = 1))
             img_embeds2.append(cur_new_img_embeds2.mean(dim = 1))
             text_embeds.append(cur_new_text_embeds.mean(dim = 1))
+
+
 
         # Truncate sequences to max length as image embeddings can make the sequence longer
         tokenizer_model_max_length = getattr(self.config, 'tokenizer_model_max_length', None)
