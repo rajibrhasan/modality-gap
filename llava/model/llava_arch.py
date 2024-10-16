@@ -35,8 +35,8 @@ class LlavaMetaModel:
             self.vision_tower = build_vision_tower(config, delay_load=True)
 
             #Added two projector for modality-specific and modality-invariant embeddings
-            self.mm_projector1 = build_vision_projector(config)
-            self.mm_projector2 = build_vision_projector(config)
+            self.mm_projector.projector1 = build_vision_projector(config)
+            self.mm_projector.projector2 = build_vision_projector(config)
 
             if 'unpad' in getattr(config, 'mm_patch_merge_type', ''):
                 self.image_newline = nn.Parameter(
@@ -55,8 +55,7 @@ class LlavaMetaModel:
         mm_vision_select_feature = model_args.mm_vision_select_feature
 
         #Two pretrain adapter for two mm_mlp_adapter
-        pretrain_mm_mlp_adapter1 = model_args.pretrain_mm_mlp_adapter1
-        pretrain_mm_mlp_adapter2 = model_args.pretrain_mm_mlp_adapter2
+        pretrain_mm_mlp_adapter = model_args.pretrain_mm_mlp_adapter
 
         mm_patch_merge_type = model_args.mm_patch_merge_type
 
@@ -84,8 +83,8 @@ class LlavaMetaModel:
         self.config.mm_patch_merge_type = mm_patch_merge_type
 
         if getattr(self, 'mm_projector', None) is None:
-            self.mm_projector1 = build_vision_projector(self.config)
-            self.mm_projector2 = build_vision_projector(self.config)
+            self.mm_projector.projector1 = build_vision_projector(self.config)
+            self.mm_projector.projector2 = build_vision_projector(self.config)
 
             if 'unpad' in mm_patch_merge_type:
                 embed_std = 1 / torch.sqrt(torch.tensor(self.config.hidden_size, dtype=self.dtype))
@@ -94,20 +93,19 @@ class LlavaMetaModel:
                 )
         else:
             # In case it is frozen by LoRA
-            for p in self.mm_projector1.parameters():
+            for p in self.mm_projector.projector1.parameters():
                 p.requires_grad = True
             
-            for p in self.mm_projector2.parameters():
+            for p in self.mm_projector.projector2.parameters():
                 p.requires_grad = True
 
-        if pretrain_mm_mlp_adapter1 is not None:
-            mm_projector_weights1 = torch.load(pretrain_mm_mlp_adapter1, map_location='cpu')
-            mm_projector_weights2 = torch.load(pretrain_mm_mlp_adapter2, map_location='cpu')
+        if pretrain_mm_mlp_adapter is not None:
+            mm_projector_weights = torch.load(pretrain_mm_mlp_adapter, map_location='cpu')
+           
             def get_w(weights, keyword):
                 return {k.split(keyword + '.')[1]: v for k, v in weights.items() if keyword in k}
 
-            self.mm_projector1.load_state_dict(get_w(mm_projector_weights1, 'mm_projector1'))
-            self.mm_projector2.load_state_dict(get_w(mm_projector_weights2, 'mm_projector1'))
+            self.mm_projector.load_state_dict(get_w(mm_projector_weights, 'mm_projector'))
 
 
 def unpad_image(tensor, original_size):
@@ -152,8 +150,8 @@ class LlavaMetaForCausalLM(ABC):
 
     def encode_images(self, images):
         image_features = self.get_model().get_vision_tower()(images)
-        image_features1 = self.get_model().mm_projector1(image_features)
-        image_features2 = self.get_model().mm_projector2(image_features)
+        image_features1 = self.get_model().mm_projector.projector1(image_features)
+        image_features2 = self.get_model().mm_projector.projector2(image_features)
         
         return image_features1, image_features2
     
