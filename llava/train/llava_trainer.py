@@ -228,7 +228,6 @@ class LLaVATrainer(Trainer):
         return self.optimizer
 
     def _save_checkpoint(self, model, trial, metrics=None):
-        model.generation_config.do_sample = True 
         if getattr(self.args, 'tune_mm_mlp_adapter', False):
             print("Inside saving")
             from transformers.trainer_utils import PREFIX_CHECKPOINT_DIR
@@ -252,7 +251,6 @@ class LLaVATrainer(Trainer):
             super(LLaVATrainer, self)._save_checkpoint(model, trial, metrics)
 
     def _save(self, output_dir: Optional[str] = None, state_dict=None):
-        self.model.generation_config.do_sample = True
         if getattr(self.args, 'tune_mm_mlp_adapter', False):
             pass
         else:
