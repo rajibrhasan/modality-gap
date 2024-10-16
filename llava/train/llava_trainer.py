@@ -230,11 +230,12 @@ class LLaVATrainer(Trainer):
     def _save_checkpoint(self, model, trial, metrics=None):
         if getattr(self.args, 'tune_mm_mlp_adapter', False):
             from transformers.trainer_utils import PREFIX_CHECKPOINT_DIR
+            from transformers import GenerationConfig
             checkpoint_folder = f"{PREFIX_CHECKPOINT_DIR}_{self.state.global_step}"
-
+            generation_config = GenerationConfig(max_length = 4096)
             run_dir = self._get_output_dir(trial=trial)
             output_dir = os.path.join(run_dir, checkpoint_folder)
-            os.makedirs(output_dir, exist_ok = True)
+            generation_config.save_pretrained(output_dir)
             # Only save Adapter
             keys_to_match = ['mm_projector', 'vision_resampler']
             if getattr(self.args, "use_im_start_end", False):
