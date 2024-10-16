@@ -231,7 +231,7 @@ class LLaVATrainer(Trainer):
         if getattr(self.args, 'tune_mm_mlp_adapter', False):
             print("Inside saving")
             from transformers.trainer_utils import PREFIX_CHECKPOINT_DIR
-            checkpoint_folder = f"{PREFIX_CHECKPOINT_DIR}-{self.state.global_step}"
+            checkpoint_folder = f"{PREFIX_CHECKPOINT_DIR}_{self.state.global_step}"
 
             run_dir = self._get_output_dir(trial=trial)
             output_dir = os.path.join(run_dir, checkpoint_folder)
@@ -249,11 +249,12 @@ class LLaVATrainer(Trainer):
                 self.model.config.save_pretrained(output_dir)
                 torch.save(weight_to_save, os.path.join(output_dir, f'mm_projector.bin'))
         else:
-            
+            self.model.generation_config.do_sample = True
             super(LLaVATrainer, self)._save_checkpoint(model, trial, metrics)
 
     def _save(self, output_dir: Optional[str] = None, state_dict=None):
         if getattr(self.args, 'tune_mm_mlp_adapter', False):
             pass
         else:
+            self.model.generation_config.do_sample = True
             super(LLaVATrainer, self)._save(output_dir, state_dict)
