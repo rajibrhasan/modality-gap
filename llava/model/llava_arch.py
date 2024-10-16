@@ -358,9 +358,9 @@ class LlavaMetaForCausalLM(ABC):
 
         new_input_embeds = torch.stack(new_input_embeds_padded, dim=0)
         embeds  = {
-            'img_embeds1': img_embeds1,
-            'img_embeds2': img_embeds2,
-            'text_embeds': text_embeds
+            'img_embeds1': torch.stack(img_embeds1, dim = 0),
+            'img_embeds2': torch.stack(img_embeds2, dim = 0),
+            'text_embeds': torch.stack(text_embeds, dim = 0)
         }
 
         
