@@ -243,10 +243,8 @@ class LLaVATrainer(Trainer):
 
             weight_to_save = get_mm_adapter_state_maybe_zero_3(self.model.named_parameters(), keys_to_match)
 
-            print(weight_to_save.keys())
-
             if self.args.local_rank == 0 or self.args.local_rank == -1:
-                print('Inside local rank ==0')
+                print(output_dir)
 
                 self.model.config.save_pretrained(output_dir)
                 torch.save(weight_to_save, os.path.join(output_dir, f'mm_projector.bin'))
