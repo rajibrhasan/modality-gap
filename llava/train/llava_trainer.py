@@ -236,8 +236,7 @@ class LLaVATrainer(Trainer):
             generation_config = GenerationConfig(max_length=4096)
 
             # Save the GenerationConfig object to the output directory
-            
-
+        
             checkpoint_folder = f"{PREFIX_CHECKPOINT_DIR}_{self.state.global_step}"
 
             run_dir = self._get_output_dir(trial=trial)
@@ -254,15 +253,15 @@ class LLaVATrainer(Trainer):
             os.makedirs(output_dir, exist_ok = True)
 
             if self.args.local_rank == 0 or self.args.local_rank == -1:
-                self.model.config.save_pretrained(output_dir)
+                self.model.save_pretrained(output_dir)
                 torch.save(weight_to_save, os.path.join(output_dir, f'mm_projector.bin'))
+
+                print(generation_config)
         else:
-            self.model.generation_config.do_sample = True
             super(LLaVATrainer, self)._save_checkpoint(model, trial, metrics)
 
     def _save(self, output_dir: Optional[str] = None, state_dict=None):
         if getattr(self.args, 'tune_mm_mlp_adapter', False):
             pass
         else:
-            self.model.generation_config.do_sample = True
             super(LLaVATrainer, self)._save(output_dir, state_dict)
