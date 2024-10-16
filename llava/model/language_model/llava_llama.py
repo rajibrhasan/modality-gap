@@ -48,7 +48,7 @@ class LlavaLlamaForCausalLM(LlamaForCausalLM, LlavaMetaForCausalLM):
         self.pretraining_tp = config.pretraining_tp
         self.vocab_size = config.vocab_size
         self.lm_head = nn.Linear(config.hidden_size, config.vocab_size, bias=False)
-        self.loss_dif = DiffLoss()
+        self.loss_diff = DiffLoss()
         self.loss_sim = CMD()
 
         # Initialize weights and apply final processing
@@ -106,7 +106,7 @@ class LlavaLlamaForCausalLM(LlamaForCausalLM, LlavaMetaForCausalLM):
         )
 
         device = outputs['loss'].device
-        diff_loss = self.loss_dif(embeds['img_embeds1'], embeds['img_embeds2']) 
+        diff_loss = self.loss_diff(embeds['img_embeds1'], embeds['img_embeds2']) 
         diff_loss += self.loss_diff(embeds['img_embeds1'], embeds['text_embeds'])
         sim_loss = self.loss_sim(embeds['img_embeds2'], embeds['text_embeds'], 5)
         outputs['loss'] += self.config.diff_loss_ceof * diff_loss.to(device) + self.config.sim_loss_coef*sim_loss.to(device)
