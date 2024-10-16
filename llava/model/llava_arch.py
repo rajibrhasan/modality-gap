@@ -43,8 +43,6 @@ class LlavaMetaModel:
                 self.image_newline = nn.Parameter(
                     torch.empty(config.hidden_size, dtype=self.dtype)
                 )
-            
-            print(self.mm_projector)
 
     def get_vision_tower(self):
         vision_tower = getattr(self, 'vision_tower', None)
