@@ -33,11 +33,11 @@ class LlavaMetaModel:
 
         if hasattr(config, "mm_vision_tower"):
             self.vision_tower = build_vision_tower(config, delay_load=True)
-            self.mm_projector = nn.Module()
+            #self.mm_projector = nn.Module()
 
             #Added two projector for modality-specific and modality-invariant embeddings
-            self.mm_projector.projector1 = build_vision_projector(config)
-            self.mm_projector.projector2 = build_vision_projector(config)
+            self.mm_proj1 = build_vision_projector(config)
+            self.mm_proj2 = build_vision_projector(config)
 
             if 'unpad' in getattr(config, 'mm_patch_merge_type', ''):
                 self.image_newline = nn.Parameter(
@@ -83,9 +83,9 @@ class LlavaMetaModel:
         self.config.mm_vision_select_feature = mm_vision_select_feature
         self.config.mm_patch_merge_type = mm_patch_merge_type
 
-        if getattr(self, 'mm_projector', None) is None:
-            self.mm_projector.projector1 = build_vision_projector(self.config)
-            self.mm_projector.projector2 = build_vision_projector(self.config)
+        if getattr(self, 'mm_proj1', None) is None:
+            self.mm_proj1 = build_vision_projector(self.config)
+            self.mm_proj2 = build_vision_projector(self.config)
 
             if 'unpad' in mm_patch_merge_type:
                 embed_std = 1 / torch.sqrt(torch.tensor(self.config.hidden_size, dtype=self.dtype))
@@ -94,7 +94,9 @@ class LlavaMetaModel:
                 )
         else:
             # In case it is frozen by LoRA
-            for p in self.mm_projector.parameters():
+            for p in self.mm_proj1.parameters():
+                p.requires_grad = True
+            for p in self.mm_proj2.parameters():
                 p.requires_grad = True
             
         if pretrain_mm_mlp_adapter is not None:
@@ -148,8 +150,8 @@ class LlavaMetaForCausalLM(ABC):
 
     def encode_images(self, images):
         image_features = self.get_model().get_vision_tower()(images)
-        image_features1 = self.get_model().mm_projector.projector1(image_features)
-        image_features2 = self.get_model().mm_projector.projector2(image_features)
+        image_features1 = self.get_model().mm_proj1(image_features)
+        image_features2 = self.get_model().mm_proj2(image_features)
         
         return image_features1, image_features2
     
