@@ -932,23 +932,23 @@ def train(attn_implementation=None):
         model.config.tune_mm_mlp_adapter = training_args.tune_mm_mlp_adapter = model_args.tune_mm_mlp_adapter
         if model_args.tune_mm_mlp_adapter:
             model.requires_grad_(False)
-            for p in model.get_model().mm_projector.projector1.parameters():
+            for p in model.get_model().mm_projector.branch1.parameters():
                 p.requires_grad = True
             
-            for p in model.get_model().mm_projector.projector2.parameters():
+            for p in model.get_model().mm_projector.branch2.parameters():
                 p.requires_grad = True
             
 
         model.config.freeze_mm_mlp_adapter = training_args.freeze_mm_mlp_adapter
         if training_args.freeze_mm_mlp_adapter:
-            for p in model.get_model().mm_projector.projector1.parameters():
+            for p in model.get_model().mm_projector.branch1.parameters():
                 p.requires_grad = False
-            for p in model.get_model().mm_projector.projector2.parameters():
+            for p in model.get_model().mm_projector.branch2.parameters():
                 p.requires_grad = False
 
         if training_args.bits in [4, 8]:
-            model.get_model().mm_projector.projector1.to(dtype=compute_dtype, device=training_args.device)
-            model.get_model().mm_projector.projector2.to(dtype=compute_dtype, device=training_args.device)
+            model.get_model().mm_projector.branch1.to(dtype=compute_dtype, device=training_args.device)
+            model.get_model().mm_projector.branch2.to(dtype=compute_dtype, device=training_args.device)
 
 
         model.config.mm_use_im_start_end = data_args.mm_use_im_start_end = model_args.mm_use_im_start_end
