@@ -310,9 +310,9 @@ class LlavaMetaForCausalLM(ABC):
             cur_new_img_embeds2 = torch.cat(cur_new_img_embeds2)
             cur_new_text_embeds = torch.cat(cur_new_text_embeds)
 
-            print('cur_new_img_embeds1 shape: ', cur_new_input_embeds.mean(dim = 0).shape)
-            print('cur_new_img_embeds2 shape: ', cur_new_img_embeds1.mean(dim = 0).shape)
-            print('cur_new_text_embeds shape: ', cur_new_text_embeds.mean(dim = 0).shape)
+            # print('cur_new_img_embeds1 shape: ', cur_new_input_embeds.mean(dim = 0).shape)
+            # print('cur_new_img_embeds2 shape: ', cur_new_img_embeds1.mean(dim = 0).shape)
+            # print('cur_new_text_embeds shape: ', cur_new_text_embeds.mean(dim = 0).shape)
 
 
             new_input_embeds.append(cur_new_input_embeds)
