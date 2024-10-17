@@ -111,7 +111,6 @@ class LlavaLlamaForCausalLM(LlamaForCausalLM, LlavaMetaForCausalLM):
         sim_loss = self.loss_sim(embeds['img_embeds2'], embeds['text_embeds'], 5)
         outputs['loss'] += self.config.diff_loss_coef * diff_loss.to(device) + self.config.sim_loss_coef*sim_loss.to(device)
 
-        
         return outputs
 
     @torch.no_grad()

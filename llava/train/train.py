@@ -26,7 +26,6 @@ import torch
 
 import transformers
 import tokenizers
-from transformers import GenerationConfig
 
 from llava.constants import IGNORE_INDEX, IMAGE_TOKEN_INDEX, DEFAULT_IMAGE_TOKEN, DEFAULT_IM_START_TOKEN, DEFAULT_IM_END_TOKEN
 from torch.utils.data import Dataset
@@ -195,8 +194,6 @@ def safe_save_model_for_hf_trainer(trainer: transformers.Trainer,
         if getattr(trainer.args, "use_im_start_end", False):
             keys_to_match.extend(['embed_tokens', 'embed_in'])
 
-        generation_config = GenerationConfig(max_length = 4096)
-        generation_config.save_pretrained(output_dir)
         weight_to_save = get_mm_adapter_state_maybe_zero_3(trainer.model.named_parameters(), keys_to_match)
         trainer.model.config.save_pretrained(output_dir)
 
@@ -995,8 +992,6 @@ def train(attn_implementation=None):
             model.named_parameters()
         )
         if training_args.local_rank == 0 or training_args.local_rank == -1:
-            generation_config = GenerationConfig(max_length = 4096)
-            generation_config.save_pretrained(training_args.output_dir)
             model.config.save_pretrained(training_args.output_dir)
             model.save_pretrained(training_args.output_dir, state_dict=state_dict)
             torch.save(non_lora_state_dict, os.path.join(training_args.output_dir, 'non_lora_trainables.bin'))
