@@ -97,7 +97,9 @@ class LlavaMetaModel:
             for p in self.mm_projector2.parameters():
                 p.requires_grad = True
         
-       
+        if getattr(self, 'mm_projector1', None) is None:
+            print('Not initialized!')
+
             
         if pretrain_mm_mlp_adapter is not None:
             mm_projector_weights = torch.load(pretrain_mm_mlp_adapter, map_location='cpu')
