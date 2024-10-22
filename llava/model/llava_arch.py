@@ -106,6 +106,9 @@ class LlavaMetaModel:
             mm_projector_weights = torch.load(pretrain_mm_mlp_adapter, map_location='cpu')
             print(mm_projector_weights)
 
+            print(self.mm_projector1)
+            print(self.mm_projector2)
+
             def get_w(weights, keyword):
                 return {k.split(keyword + '.')[1]: v for k, v in weights.items() if keyword in k}
            
