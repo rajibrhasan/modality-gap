@@ -274,8 +274,11 @@ class LlavaMetaForCausalLM(ABC):
             for i in range(len(image_token_indices) - 1):
                 cur_input_ids_noim.append(cur_input_ids[image_token_indices[i]+1:image_token_indices[i+1]])
                 cur_labels_noim.append(cur_labels[image_token_indices[i]+1:image_token_indices[i+1]])
+            
+            
             split_sizes = [x.shape[0] for x in cur_labels_noim]
             cur_input_embeds = self.get_model().embed_tokens(torch.cat(cur_input_ids_noim))
+            print('No im shape: ', cur_input_embeds.shape)
             cur_input_embeds_no_im = torch.split(cur_input_embeds, split_sizes, dim=0)
             cur_new_input_embeds = []
             cur_new_labels = []
@@ -311,9 +314,9 @@ class LlavaMetaForCausalLM(ABC):
             cur_new_img_embeds2 = torch.cat(cur_new_img_embeds2)
             cur_new_text_embeds = torch.cat(cur_new_text_embeds)
 
-            print('cur_new_img_embeds1 shape: ', cur_new_input_embeds.mean(dim = 0).shape)
-            print('cur_new_img_embeds2 shape: ', cur_new_img_embeds1.mean(dim = 0).shape)
-            print('cur_new_text_embeds shape: ', cur_new_text_embeds.mean(dim = 0).shape)
+            # print('cur_new_img_embeds1 shape: ', cur_new_input_embeds.mean(dim = 0).shape)
+            # print('cur_new_img_embeds2 shape: ', cur_new_img_embeds1.mean(dim = 0).shape)
+            # print('cur_new_text_embeds shape: ', cur_new_text_embeds.mean(dim = 0).shape)
 
 
             new_input_embeds.append(cur_new_input_embeds)
@@ -368,7 +371,6 @@ class LlavaMetaForCausalLM(ABC):
             'text_embeds': torch.stack(text_embeds, dim = 0)
         }
 
-        print('new input embeds shape: ', new_input_embeds.shape)
 
         
 

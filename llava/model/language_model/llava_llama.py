@@ -92,6 +92,8 @@ class LlavaLlamaForCausalLM(LlamaForCausalLM, LlavaMetaForCausalLM):
                 image_sizes
             )
 
+        print(inputs_embeds.shape)
+
         outputs =  super().forward(
             input_ids=input_ids,
             attention_mask=attention_mask,
