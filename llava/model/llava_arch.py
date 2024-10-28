@@ -278,7 +278,6 @@ class LlavaMetaForCausalLM(ABC):
             
             split_sizes = [x.shape[0] for x in cur_labels_noim]
             cur_input_embeds = self.get_model().embed_tokens(torch.cat(cur_input_ids_noim))
-            print('No im shape: ', cur_input_embeds.shape)
             cur_input_embeds_no_im = torch.split(cur_input_embeds, split_sizes, dim=0)
             cur_new_input_embeds = []
             cur_new_labels = []

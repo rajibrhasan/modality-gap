@@ -92,8 +92,6 @@ class LlavaLlamaForCausalLM(LlamaForCausalLM, LlavaMetaForCausalLM):
                 image_sizes
             )
 
-        print(inputs_embeds.shape)
-
         outputs =  super().forward(
             input_ids=input_ids,
             attention_mask=attention_mask,
@@ -114,7 +112,7 @@ class LlavaLlamaForCausalLM(LlamaForCausalLM, LlavaMetaForCausalLM):
         print('Diff Loss: ', diff_loss)
         print('Sim Loss: ', sim_loss)
         print('LLM loss: ', outputs['loss'])
-        # outputs['loss'] += self.config.diff_loss_coef * diff_loss.to(device) + self.config.sim_loss_coef*sim_loss.to(device)
+        outputs['loss'] += self.config.diff_loss_coef * diff_loss.to(device) + self.config.sim_loss_coef*sim_loss.to(device)
 
         return outputs
 
