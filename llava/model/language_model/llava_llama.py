@@ -107,8 +107,8 @@ class LlavaLlamaForCausalLM(LlamaForCausalLM, LlavaMetaForCausalLM):
 
         device = outputs['loss'].device
         diff_loss = self.loss_diff(embeds['img_embeds1'], embeds['img_embeds2']) 
-        diff_loss += self.loss_diff(embeds['img_embeds1'], embeds['text_embeds'])
-        sim_loss = self.loss_sim(embeds['img_embeds2'], embeds['text_embeds'], 5)
+        diff_loss += self.loss_diff(embeds['img_embeds2'], embeds['text_embeds'])
+        sim_loss = self.loss_sim(embeds['img_embeds1'], embeds['text_embeds'], 5)
         print('Diff Loss: ', diff_loss)
         print('Sim Loss: ', sim_loss)
         print('LLM loss: ', outputs['loss'])
